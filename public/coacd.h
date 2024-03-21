@@ -56,9 +56,12 @@ CoACD_MeshArray COACD_API CoACD_run(CoACD_Mesh const &input, double threshold,
 
 void COACD_API CoACD_setLogLevel(char const *level);
 
-// test
 int COACD_API CoACD_test();
 
 double COACD_API CoACD_getChVolume(CoACD_Mesh const &input);
+
+CoACD_MeshArray COACD_API CoACD_getClipMesh(CoACD_Mesh const &input, int preprocess_mode,
+                                            int prep_resolution,
+                                            double a, double b, double c, double d);
 
 }

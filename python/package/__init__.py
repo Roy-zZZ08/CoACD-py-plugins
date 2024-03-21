@@ -61,6 +61,17 @@ _lib.CoACD_run.argtypes = [
 ]
 _lib.CoACD_run.restype = CoACD_MeshArray
 
+_lib.CoACD_getClipMesh.argtypes = [
+    POINTER(CoACD_Mesh),
+    c_int,
+    c_int,
+    c_double,
+    c_double,
+    c_double,
+    c_double,
+]
+_lib.CoACD_getClipMesh.restype = CoACD_MeshArray
+
 _lib.CoACD_getChVolume.argtypes = [
     POINTER(CoACD_Mesh),
 ]
@@ -106,6 +117,64 @@ def get_ch_volume(
     )
 
     return ch_volume
+
+def get_clip_mesh(
+    mesh: Mesh,
+    a: float = 0.0,
+    b: float = 1.0,
+    c: float = 0.0,
+    d: float = -0.5,
+    preprocess_mode: str = "auto",
+    preprocess_resolution: int = 30,
+):
+    vertices = np.ascontiguousarray(mesh.vertices, dtype=np.double)
+    indices = np.ascontiguousarray(mesh.indices, dtype=np.int32)
+    assert len(vertices.shape) == 2 and vertices.shape[1] == 3
+    assert len(indices.shape) == 2 and indices.shape[1] == 3
+
+    mesh = CoACD_Mesh()
+
+    mesh.vertices_ptr = ctypes.cast(
+        vertices.__array_interface__["data"][0], POINTER(c_double)
+    )
+    mesh.vertices_count = vertices.shape[0]
+
+    mesh.triangles_ptr = ctypes.cast(
+        indices.__array_interface__["data"][0], POINTER(c_int)
+    )
+    mesh.triangles_count = indices.shape[0]
+
+    if preprocess_mode == "on":
+        pm = 1
+    elif preprocess_mode == "off":
+        pm = 2
+    else:
+        pm = 0
+
+    mesh_array = _lib.CoACD_getClipMesh(
+        mesh,
+        pm,
+        preprocess_resolution,
+        a,
+        b,
+        c,
+        d,
+    )
+
+    meshes = []
+    for i in range(mesh_array.meshes_count):
+        mesh = mesh_array.meshes_ptr[i]
+        vertices = np.ctypeslib.as_array(
+            mesh.vertices_ptr, (mesh.vertices_count, 3)
+        ).copy()
+        indices = np.ctypeslib.as_array(
+            mesh.triangles_ptr, (mesh.triangles_count, 3)
+        ).copy()
+        meshes.append([vertices, indices])
+
+    _lib.CoACD_freeMeshArray(mesh_array)
+    return meshes
+
 
 def run_coacd(
     mesh: Mesh,
