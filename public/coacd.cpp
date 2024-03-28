@@ -22,8 +22,8 @@ double get_ch_volume(Mesh const &input) {
 std::vector<Mesh> get_clip_mesh(Mesh const &input, std::string preprocess_mode,
                                 int prep_resolution,
                                 double a, double b, double c, double d) { 
-  logger::info("preprocess mode         {}", preprocess_mode);
-  logger::info("preprocess resolution   {}", prep_resolution);
+  // logger::info("preprocess mode         {}", preprocess_mode);
+  // logger::info("preprocess resolution   {}", prep_resolution);
 
   if (prep_resolution > 1000) {
     throw std::runtime_error("CoACD prep resolution > 1000, this is probably a "
