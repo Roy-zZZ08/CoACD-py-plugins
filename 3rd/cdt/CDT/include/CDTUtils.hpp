@@ -185,12 +185,17 @@ CDT_INLINE_IF_HEADER_ONLY Index edgeNeighborInd(
     const VertInd iVedge1,
     const VertInd iVedge2)
 {
-    assert(vv[0] == iVedge1 || vv[1] == iVedge1 || vv[2] == iVedge1);
-    assert(vv[0] == iVedge2 || vv[1] == iVedge2 || vv[2] == iVedge2);
-    assert(
-        (vv[0] != iVedge1 && vv[0] != iVedge2) ||
-        (vv[1] != iVedge1 && vv[1] != iVedge2) ||
-        (vv[2] != iVedge1 && vv[2] != iVedge2));
+    if (!(vv[0] == iVedge1 || vv[1] == iVedge1 || vv[2] == iVedge1)){
+        throw std::runtime_error("iVedge1 is not in vv.");
+    };
+    if (!(vv[0] == iVedge2 || vv[1] == iVedge2 || vv[2] == iVedge2)) {
+        throw std::runtime_error("iVedge2 is not in vv.");
+    }
+    if (!((vv[0] != iVedge1 && vv[0] != iVedge2) ||
+         (vv[1] != iVedge1 && vv[1] != iVedge2) ||
+         (vv[2] != iVedge1 && vv[2] != iVedge2))) {
+        throw std::runtime_error("Both vertices cannot be equal to iVedge1 and iVedge2.");
+    }
     /*
      *      vv[2]
      *       /\

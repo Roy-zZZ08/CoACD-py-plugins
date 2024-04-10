@@ -55,8 +55,7 @@ std::vector<Mesh> get_clip_mesh(Mesh const &input, std::string preprocess_mode,
   bool clipf = Clip(m, pos, neg, bestplane, cut_area);
   if (!clipf)
   {
-      logger::error("Wrong clip proposal!");
-      exit(0);
+      throw std::runtime_error("Wrong clip proposal!");
   }
 
   std::vector<Mesh> result;
@@ -216,14 +215,15 @@ CoACD_MeshArray CoACD_getClipMesh(CoACD_Mesh const &input, int preprocess_mode,
     pm = "auto";
   }
 
-  auto meshes = coacd::get_clip_mesh(mesh, pm,
-                             prep_resolution, a, b, c, d);
-
   CoACD_MeshArray arr;
-  arr.meshes_ptr = new CoACD_Mesh[meshes.size()];
-  arr.meshes_count = meshes.size();
 
-  for (size_t i = 0; i < meshes.size(); ++i) {
+  try{
+    auto meshes = coacd::get_clip_mesh(mesh, pm,
+                              prep_resolution, a, b, c, d);
+    arr.meshes_ptr = new CoACD_Mesh[meshes.size()];
+    arr.meshes_count = meshes.size();
+
+    for (size_t i = 0; i < meshes.size(); ++i) {
     arr.meshes_ptr[i].vertices_ptr = new double[meshes[i].vertices.size() * 3];
     arr.meshes_ptr[i].vertices_count = meshes[i].vertices.size();
     for (size_t j = 0; j < meshes[i].vertices.size(); ++j) {
@@ -239,6 +239,13 @@ CoACD_MeshArray CoACD_getClipMesh(CoACD_Mesh const &input, int preprocess_mode,
       arr.meshes_ptr[i].triangles_ptr[3 * j + 2] = meshes[i].indices[j][2];
     }
   }
+  } catch (const std::runtime_error& e) {
+    std::cerr << "An error occurred: " << e.what() << std::endl;
+    arr.meshes_ptr = nullptr;
+    arr.meshes_count = 0;
+    return arr;
+  }
+  
   return arr;
 }
 

@@ -1607,7 +1607,9 @@ void Triangulation<T, TNearPointLocator>::triangulatePseudopolygonIteration(
         const TriInd outerTri = outerTris[iC];
         if(outerTri != noNeighbor)
         {
-            assert(outerTri != iT);
+            if (!(outerTri != iT)){
+                throw std::runtime_error("outerTri != iT.");
+            }
             t.neighbors[1] = outerTri;
             changeNeighbor(outerTri, c, b, iT);
         }
@@ -1624,7 +1626,9 @@ void Triangulation<T, TNearPointLocator>::triangulatePseudopolygonIteration(
             outerTris[iA] != noNeighbor ? outerTris[iA] : m_vertTris[c];
         if(outerTri != noNeighbor)
         {
-            assert(outerTri != iT);
+            if (!(outerTri != iT)){
+                throw std::runtime_error("outerTri != iT.");
+            }
             t.neighbors[2] = outerTri;
             changeNeighbor(outerTri, c, a, iT);
         }
