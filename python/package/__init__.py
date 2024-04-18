@@ -29,11 +29,16 @@ class CoACD_Mesh(ctypes.Structure):
         ("triangles_count", c_uint64),
     ]
 
-
 class CoACD_MeshArray(ctypes.Structure):
     _fields_ = [
         ("meshes_ptr", POINTER(CoACD_Mesh)),
         ("meshes_count", c_uint64),
+    ]
+
+class CoACD_ChWithVolArray(ctypes.Structure):
+    _fields_ = [
+        ("ch_ptr", POINTER(CoACD_Mesh)),
+        ("ch_vol", c_double),
     ]
 
 _lib.CoACD_test.argtypes = None
@@ -44,6 +49,9 @@ _lib.CoACD_setLogLevel.restype = None
 
 _lib.CoACD_freeMeshArray.argtypes = [CoACD_MeshArray]
 _lib.CoACD_freeMeshArray.restype = None
+
+_lib.CoACD_freeMeshCH.argtypes = [CoACD_ChWithVolArray]
+_lib.CoACD_freeMeshCH.restype = None
 
 _lib.CoACD_run.argtypes = [
     POINTER(CoACD_Mesh),
@@ -71,6 +79,11 @@ _lib.CoACD_getClipMesh.argtypes = [
     c_double,
 ]
 _lib.CoACD_getClipMesh.restype = CoACD_MeshArray
+
+_lib.CoACD_getChWithVolume.argtypes = [
+    POINTER(CoACD_Mesh),
+]
+_lib.CoACD_getChWithVolume.restype = CoACD_ChWithVolArray
 
 _lib.CoACD_getChVolume.argtypes = [
     POINTER(CoACD_Mesh),
@@ -117,6 +130,45 @@ def get_ch_volume(
     )
 
     return ch_volume
+
+def get_ch_with_volume(
+    mesh: Mesh,
+):
+    vertices = np.ascontiguousarray(mesh.vertices, dtype = np.double)
+    indices = np.ascontiguousarray(mesh.indices, dtype = np.int32)
+    assert len(vertices.shape) == 2 and vertices.shape[1] == 3
+    assert len(indices.shape) == 2 and indices.shape[1] == 3
+    
+    mesh = CoACD_Mesh()
+
+    mesh.vertices_ptr = ctypes.cast(
+        vertices.__array_interface__["data"][0], POINTER(c_double)
+    )
+    mesh.vertices_count = vertices.shape[0]
+
+    mesh.triangles_ptr = ctypes.cast(
+        indices.__array_interface__["data"][0], POINTER(c_int)
+    )
+    mesh.triangles_count = indices.shape[0]
+    
+    ch_with_volume = _lib.CoACD_getChWithVolume(
+        mesh,
+    )
+
+    meshes = []
+    mesh = ch_with_volume.ch_ptr[0]
+    vertices = np.ctypeslib.as_array(
+        mesh.vertices_ptr, (mesh.vertices_count, 3)
+    ).copy()
+    indices = np.ctypeslib.as_array(
+        mesh.triangles_ptr, (mesh.triangles_count, 3)
+    ).copy()
+    meshes.append([vertices, indices])
+    ch_vol = ch_with_volume.ch_vol
+
+    _lib.CoACD_freeMeshCH(ch_with_volume)
+
+    return meshes, ch_vol
 
 def get_clip_mesh(
     mesh: Mesh,

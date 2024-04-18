@@ -162,6 +162,20 @@ void set_log_level(std::string_view level) {
 } // namespace coacd
 
 extern "C" {
+void CoACD_freeMeshCH(CoACD_ChWithVolArray arr) {
+  uint64_t i = 0;
+
+  delete[] arr.ch_ptr[i].vertices_ptr;
+  arr.ch_ptr[i].vertices_ptr = nullptr;
+  arr.ch_ptr[i].vertices_count = 0;
+  delete[] arr.ch_ptr[i].triangles_ptr;
+  arr.ch_ptr[i].triangles_ptr = nullptr;
+  arr.ch_ptr[i].triangles_count = 0;
+  
+  arr.ch_ptr = nullptr;
+  delete[] arr.ch_ptr;
+}
+
 void CoACD_freeMeshArray(CoACD_MeshArray arr) {
   for (uint64_t i = 0; i < arr.meshes_count; ++i) {
     delete[] arr.meshes_ptr[i].vertices_ptr;
@@ -189,6 +203,49 @@ double CoACD_getChVolume(CoACD_Mesh const &input) {
                             input.triangles_ptr[3 * i + 2]});
   }
   return coacd::get_ch_volume(mesh);
+}
+
+CoACD_ChWithVolArray CoACD_getChWithVolume(CoACD_Mesh const &input) {
+  coacd::Mesh mesh;
+  for (uint64_t i = 0; i < input.vertices_count; ++i) {
+    mesh.vertices.push_back({input.vertices_ptr[3 * i],
+                             input.vertices_ptr[3 * i + 1],
+                             input.vertices_ptr[3 * i + 2]});
+  }
+  for (uint64_t i = 0; i < input.triangles_count; ++i) {
+    mesh.indices.push_back({input.triangles_ptr[3 * i],
+                            input.triangles_ptr[3 * i + 1],
+                            input.triangles_ptr[3 * i + 2]});
+  }
+
+  CoACD_ChWithVolArray arr;
+  coacd::Model m, ch;
+  m.Load(mesh.vertices, mesh.indices);
+  m.ComputeVCH(ch);
+  arr.ch_vol = MeshVolume(ch);
+
+  std::vector<coacd::Mesh> meshes;
+  meshes.push_back(coacd::Mesh{.vertices = ch.points, .indices = ch.triangles});
+  
+  arr.ch_ptr = new CoACD_Mesh[meshes.size()];
+
+  for (size_t i = 0; i < meshes.size(); ++i) {
+    arr.ch_ptr[i].vertices_ptr = new double[meshes[i].vertices.size() * 3];
+    arr.ch_ptr[i].vertices_count = meshes[i].vertices.size();
+    for (size_t j = 0; j < meshes[i].vertices.size(); ++j) {
+      arr.ch_ptr[i].vertices_ptr[3 * j] = meshes[i].vertices[j][0];
+      arr.ch_ptr[i].vertices_ptr[3 * j + 1] = meshes[i].vertices[j][1];
+      arr.ch_ptr[i].vertices_ptr[3 * j + 2] = meshes[i].vertices[j][2];
+    }
+    arr.ch_ptr[i].triangles_ptr = new int[meshes[i].indices.size() * 3];
+    arr.ch_ptr[i].triangles_count = meshes[i].indices.size();
+    for (size_t j = 0; j < meshes[i].indices.size(); ++j) {
+      arr.ch_ptr[i].triangles_ptr[3 * j] = meshes[i].indices[j][0];
+      arr.ch_ptr[i].triangles_ptr[3 * j + 1] = meshes[i].indices[j][1];
+      arr.ch_ptr[i].triangles_ptr[3 * j + 2] = meshes[i].indices[j][2];
+    }
+  }
+  return arr;
 }
 
 CoACD_MeshArray CoACD_getClipMesh(CoACD_Mesh const &input, int preprocess_mode, 

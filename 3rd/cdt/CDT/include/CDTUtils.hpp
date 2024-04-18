@@ -89,7 +89,9 @@ CDT_INLINE_IF_HEADER_ONLY bool isOnEdge(const PtTriLocation::Enum location)
 
 CDT_INLINE_IF_HEADER_ONLY Index edgeNeighbor(const PtTriLocation::Enum location)
 {
-    assert(location >= PtTriLocation::OnEdge1);
+    if(!(location >= PtTriLocation::OnEdge1)){
+        throw std::runtime_error("location < OnEdge1");
+    }
     return static_cast<Index>(location - PtTriLocation::OnEdge1);
 }
 
@@ -172,7 +174,9 @@ CDT_INLINE_IF_HEADER_ONLY Index opoVrt(const Index neighborIndex)
 CDT_INLINE_IF_HEADER_ONLY Index
 opposedTriangleInd(const VerticesArr3& vv, const VertInd iVert)
 {
-    assert(vv[0] == iVert || vv[1] == iVert || vv[2] == iVert);
+    if(!(vv[0] == iVert || vv[1] == iVert || vv[2] == iVert)){
+        throw std::runtime_error("Invalid vertex index");
+    }
     if(vv[0] == iVert)
         return Index(1);
     if(vv[1] == iVert)
@@ -221,7 +225,9 @@ CDT_INLINE_IF_HEADER_ONLY Index edgeNeighborInd(
 CDT_INLINE_IF_HEADER_ONLY Index
 opposedVertexInd(const NeighborsArr3& nn, const TriInd iTopo)
 {
-    assert(nn[0] == iTopo || nn[1] == iTopo || nn[2] == iTopo);
+    if(!(nn[0] == iTopo || nn[1] == iTopo || nn[2] == iTopo)){
+        throw std::runtime_error("Invalid vertex index");
+    }
     if(nn[0] == iTopo)
         return Index(2);
     if(nn[1] == iTopo)
@@ -232,7 +238,9 @@ opposedVertexInd(const NeighborsArr3& nn, const TriInd iTopo)
 CDT_INLINE_IF_HEADER_ONLY Index
 vertexInd(const VerticesArr3& vv, const VertInd iV)
 {
-    assert(vv[0] == iV || vv[1] == iV || vv[2] == iV);
+    if(!(vv[0] == iV || vv[1] == iV || vv[2] == iV)){
+        throw std::runtime_error("Invalid vertex index");
+    }
     if(vv[0] == iV)
         return Index(0);
     if(vv[1] == iV)

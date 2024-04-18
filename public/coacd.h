@@ -41,6 +41,13 @@ struct CoACD_MeshArray {
   uint64_t meshes_count;
 };
 
+struct CoACD_ChWithVolArray {
+  CoACD_Mesh *ch_ptr;
+  double ch_vol;
+};
+
+void COACD_API CoACD_freeMeshCH(CoACD_ChWithVolArray arr);
+
 void COACD_API CoACD_freeMeshArray(CoACD_MeshArray arr);
 
 constexpr int preprocess_auto = 0;
@@ -59,6 +66,8 @@ void COACD_API CoACD_setLogLevel(char const *level);
 int COACD_API CoACD_test();
 
 double COACD_API CoACD_getChVolume(CoACD_Mesh const &input);
+
+CoACD_ChWithVolArray COACD_API CoACD_getChWithVolume(CoACD_Mesh const &input);
 
 CoACD_MeshArray COACD_API CoACD_getClipMesh(CoACD_Mesh const &input, int preprocess_mode,
                                             int prep_resolution,

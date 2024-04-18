@@ -276,7 +276,9 @@ struct CDT_EXPORT Triangle
     /// @returns pair of next triangle and the other vertex of a common edge
     std::pair<TriInd, VertInd> next(const VertInd i) const
     {
-        assert(vertices[0] == i || vertices[1] == i || vertices[2] == i);
+        if(!(vertices[0] == i || vertices[1] == i || vertices[2] == i)) {
+            throw std::runtime_error("Invalid vertex index");
+        }
         if(vertices[0] == i)
         {
             return std::make_pair(neighbors[0], vertices[1]);
@@ -291,7 +293,9 @@ struct CDT_EXPORT Triangle
     /// @returns pair of previous triangle and the other vertex of a common edge
     std::pair<TriInd, VertInd> prev(const VertInd i) const
     {
-        assert(vertices[0] == i || vertices[1] == i || vertices[2] == i);
+        if(!(vertices[0] == i || vertices[1] == i || vertices[2] == i)) {
+            throw std::runtime_error("Invalid vertex index");
+        }
         if(vertices[0] == i)
             return std::make_pair(neighbors[2], vertices[2]);
         if(vertices[1] == i)
