@@ -19,6 +19,20 @@ double get_ch_volume(Mesh const &input) {
   return MeshVolume(ch);
 }
 
+double get_volume(Mesh const &input) {
+  Model m;
+  m.Load(input.vertices, input.indices);
+  return MeshVolume(m);
+}
+
+double get_h_cost(Mesh const &input, double k,
+                  unsigned int resolusion, unsigned int seed, double epsilon, bool flag) {
+  Model m, ch;
+  m.Load(input.vertices, input.indices);
+  m.ComputeVCH(ch);
+  return ComputeHCost(m, ch, k, resolusion, seed, epsilon, flag);
+}
+
 std::vector<Mesh> get_clip_mesh(Mesh const &input, std::string preprocess_mode,
                                 int prep_resolution,
                                 double a, double b, double c, double d) { 
@@ -203,6 +217,37 @@ double CoACD_getChVolume(CoACD_Mesh const &input) {
                             input.triangles_ptr[3 * i + 2]});
   }
   return coacd::get_ch_volume(mesh);
+}
+
+double CoACD_getVolume(CoACD_Mesh const &input) {
+  coacd::Mesh mesh;
+  for (uint64_t i = 0; i < input.vertices_count; ++i) {
+    mesh.vertices.push_back({input.vertices_ptr[3 * i],
+                             input.vertices_ptr[3 * i + 1],
+                             input.vertices_ptr[3 * i + 2]});
+  }
+  for (uint64_t i = 0; i < input.triangles_count; ++i) {
+    mesh.indices.push_back({input.triangles_ptr[3 * i],
+                            input.triangles_ptr[3 * i + 1],
+                            input.triangles_ptr[3 * i + 2]});
+  }
+  return coacd::get_volume(mesh);
+}
+
+double CoACD_getHCost(CoACD_Mesh const &input, double k,
+                                unsigned int resolusion, unsigned int seed, double epsilon, bool flag) {
+  coacd::Mesh mesh;
+  for (uint64_t i = 0; i < input.vertices_count; ++i) {
+    mesh.vertices.push_back({input.vertices_ptr[3 * i],
+                              input.vertices_ptr[3 * i + 1],
+                              input.vertices_ptr[3 * i + 2]});
+  }
+  for (uint64_t i = 0; i < input.triangles_count; ++i) {
+    mesh.indices.push_back({input.triangles_ptr[3 * i],
+                             input.triangles_ptr[3 * i + 1],
+                             input.triangles_ptr[3 * i + 2]});
+  }
+  return coacd::get_h_cost(mesh, k, resolusion, seed, epsilon, flag);
 }
 
 CoACD_ChWithVolArray CoACD_getChWithVolume(CoACD_Mesh const &input) {

@@ -89,9 +89,7 @@ CDT_INLINE_IF_HEADER_ONLY bool isOnEdge(const PtTriLocation::Enum location)
 
 CDT_INLINE_IF_HEADER_ONLY Index edgeNeighbor(const PtTriLocation::Enum location)
 {
-    if(!(location >= PtTriLocation::OnEdge1)){
-        throw std::runtime_error("location < OnEdge1");
-    }
+    assert(location >= PtTriLocation::OnEdge1);
     return static_cast<Index>(location - PtTriLocation::OnEdge1);
 }
 
@@ -225,9 +223,8 @@ CDT_INLINE_IF_HEADER_ONLY Index edgeNeighborInd(
 CDT_INLINE_IF_HEADER_ONLY Index
 opposedVertexInd(const NeighborsArr3& nn, const TriInd iTopo)
 {
-    if(!(nn[0] == iTopo || nn[1] == iTopo || nn[2] == iTopo)){
-        throw std::runtime_error("Invalid vertex index");
-    }
+    assert(nn[0] == iTopo || nn[1] == iTopo || nn[2] == iTopo);
+
     if(nn[0] == iTopo)
         return Index(2);
     if(nn[1] == iTopo)

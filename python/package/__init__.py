@@ -90,6 +90,21 @@ _lib.CoACD_getChVolume.argtypes = [
 ]
 _lib.CoACD_getChVolume.restype = c_double
 
+_lib.CoACD_getVolume.argtypes = [
+    POINTER(CoACD_Mesh),
+]
+_lib.CoACD_getVolume.restype = c_double
+
+_lib.CoACD_getHCost.argtypes = [
+    POINTER(CoACD_Mesh),
+    c_double,
+    c_uint,
+    c_uint,
+    c_double,
+    c_bool,
+]
+_lib.CoACD_getHCost.restype = c_double
+
 class Mesh:
     def __init__(
         self,
@@ -130,6 +145,67 @@ def get_ch_volume(
     )
 
     return ch_volume
+
+def get_volume(
+    mesh: Mesh,
+):
+    vertices = np.ascontiguousarray(mesh.vertices, dtype = np.double)
+    indices = np.ascontiguousarray(mesh.indices, dtype = np.int32)
+    assert len(vertices.shape) == 2 and vertices.shape[1] == 3
+    assert len(indices.shape) == 2 and indices.shape[1] == 3
+    
+    mesh = CoACD_Mesh()
+
+    mesh.vertices_ptr = ctypes.cast(
+        vertices.__array_interface__["data"][0], POINTER(c_double)
+    )
+    mesh.vertices_count = vertices.shape[0]
+
+    mesh.triangles_ptr = ctypes.cast(
+        indices.__array_interface__["data"][0], POINTER(c_int)
+    )
+    mesh.triangles_count = indices.shape[0]
+    
+    ch_volume = _lib.CoACD_getVolume(
+        mesh,
+    )
+
+    return ch_volume
+
+def get_h_cost(
+    mesh: Mesh,
+    k: float = 0.3,
+    resolusion: int = 2000,
+    seed: int = 0,
+    epsilon: float = 0.0001,
+    flag: bool = False,
+):
+    vertices = np.ascontiguousarray(mesh.vertices, dtype = np.double)
+    indices = np.ascontiguousarray(mesh.indices, dtype = np.int32)
+    assert len(vertices.shape) == 2 and vertices.shape[1] == 3
+    assert len(indices.shape) == 2 and indices.shape[1] == 3
+    
+    mesh = CoACD_Mesh()
+
+    mesh.vertices_ptr = ctypes.cast(
+        vertices.__array_interface__["data"][0], POINTER(c_double)
+    )
+    mesh.vertices_count = vertices.shape[0]
+
+    mesh.triangles_ptr = ctypes.cast(
+        indices.__array_interface__["data"][0], POINTER(c_int)
+    )
+    mesh.triangles_count = indices.shape[0]
+    
+    h_cost = _lib.CoACD_getHCost(
+        mesh,
+        k,
+        resolusion,
+        seed,
+        epsilon,
+        flag
+    )  
+    return h_cost
 
 def get_ch_with_volume(
     mesh: Mesh,
@@ -226,7 +302,6 @@ def get_clip_mesh(
 
     _lib.CoACD_freeMeshArray(mesh_array)
     return meshes
-
 
 def run_coacd(
     mesh: Mesh,
