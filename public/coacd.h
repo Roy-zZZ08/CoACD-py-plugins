@@ -73,4 +73,7 @@ CoACD_MeshArray COACD_API CoACD_getClipMesh(CoACD_Mesh const &input, int preproc
                                             int prep_resolution,
                                             double a, double b, double c, double d);
 
+double COACD_API CoACD_getHCost(CoACD_Mesh const &input, double k,
+                      unsigned int resolusion, unsigned int seed, double epsilon, bool flag);
+
 }
