@@ -67,10 +67,15 @@ int COACD_API CoACD_test();
 
 double COACD_API CoACD_getChVolume(CoACD_Mesh const &input);
 
+double COACD_API CoACD_getVolume(CoACD_Mesh const &input);
+
 CoACD_ChWithVolArray COACD_API CoACD_getChWithVolume(CoACD_Mesh const &input);
 
 CoACD_MeshArray COACD_API CoACD_getClipMesh(CoACD_Mesh const &input, int preprocess_mode,
                                             int prep_resolution,
                                             double a, double b, double c, double d);
+
+double COACD_API CoACD_getHCost(CoACD_Mesh const &input, double k,
+                      unsigned int resolusion, unsigned int seed, double epsilon, bool flag);
 
 }
